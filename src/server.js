@@ -7,105 +7,106 @@ import Product from "./db/Product.js";
 import products from "./db/products.js";
 
 const productAddSchema = Yup.object({
-    name: Yup.string().required(),
-   /*  category: Yup.string().required(),
-    animal: Yup.string().required(), */
-    price: Yup.number().min(0).required(),
-   /*  stock: Yup.number().min(0).required(),
-    brand: Yup.string().required(), */
-    description: Yup.string().required(),
-   // image: Yup.string().required(),
+  name: Yup.string().required(),
+  // category: Yup.string().required(),
+  // animal: Yup.string().required(),
+  price: Yup.number().min(0).required(),
+  // stock: Yup.number().min(0).required(),
+  // brand: Yup.string().required(),
+  description: Yup.string().required(),
+  // image: Yup.string().required(),
 });
 
 const productUpdateSchema = Yup.object({
-    name: Yup.string(),
-  /*   category: Yup.string(),
-    animal: Yup.string(), */
-    price: Yup.number().min(0),
-   /*  stock: Yup.number().min(0),
-    brand: Yup.string(), */
-    description: Yup.string(),
-    //image: Yup.string(),
+  name: Yup.string(),
+  // category: Yup.string(),
+  // animal: Yup.string(),
+  price: Yup.number().min(0),
+  // stock: Yup.number().min(0),
+  // brand: Yup.string(),
+  description: Yup.string(),
+  // image: Yup.string(),
 });
 
-
-const startServer = () => {
+const startServer = ()=> {
     const app = express();
 
     app.use(cors());
     app.use(express.json());
-
-    app.get("/api/products", (req, res) => {
-        res.json(products);
+    
+    app.get("/api/products", async (req, res) => {
+      const result = await Product.findAll();
+      res.json(result);
     });
-    // :id - параметр маршрута
-    app.get("/api/products/:id", (req, res) => {
-        const id = Number(req.params.id);
-        const result = products.find((item) => item.id === id);
+    
+    app.get("/api/products/:id", async (req, res) => {
+      const {id} = req.params;
+      const result = await Product.findByPk(id);
 
-        if (!result) {
-            return res.status(404).json({
-                message: `product with id=${id} not found`,
-            });
-        }
-
-        res.json(result);
+      if (!result) {
+        return res.status(404).json({
+          message: `product with id=${id} not found`,
+        });
+      }
+    
+      res.json(result);
     });
 
     app.post("/api/products", async (req, res) => {
-        try {
-            await productAddSchema.validate(req.body);
-            const id = products[products.length - 1].id + 1;
-            const newProduct = { ...req.body, id };
-            products.push(newProduct);
-
-            res.status(201).json(newProduct);
-        } catch (error) {
-            res.status(400).json({
-                message: error.message,
-            });
-        }
+      try {
+        await productAddSchema.validate(req.body);
+        const result = await Product.create(req.body);
+    
+        res.status(201).json(result);
+      } catch (error) {
+        res.status(400).json({
+          message: error.message,
+        });
+      }
     });
-
+    
     app.put("/api/products/:id", async (req, res) => {
-        try {
-            await productUpdateSchema.validate(req.body);
-            const id = Number(req.params.id);
-            const idx = products.findIndex((item) => item.id === id);
-            if (idx === -1) {
-                return res.status(404).json({
-                    message: `product with id=${id} not found`,
-                });
-            }
+      try {
+        await productUpdateSchema.validate(req.body);
 
-            products[idx] = { ...products[idx], ...req.body };
+        const {id} = req.params;
+        const result = await Product.findByPk(id);
 
-            res.json(products[idx]);
-        } catch (error) {
-            res.status(400).json({
-                message: error.message,
-            });
-        }
-    });
-
-    app.delete("/api/products/:id", (req, res) => {
-        const id = Number(req.params.id);
-        const idx = products.findIndex((item) => item.id === id);
-        if (idx === -1) {
-            return res.status(404).json({
-                message: `product with id=${id} not found`,
-            });
+        if (!result) {
+          return res.status(404).json({
+            message: `product with id=${id} not found`,
+          });
         }
 
-        const [result] = products.splice(idx, 1);
+        await result.update(req.body);
+        // result.price = req.body.price;
 
-        // res.status(204).send();
         res.json(result);
+      } catch (error) {
+        res.status(400).json({
+          message: error.message,
+        });
+      }
+    });
+    
+    app.delete("/api/products/:id", async (req, res) => {
+      const {id} = req.params;
+      const result = await Product.findByPk(id);
+
+      if (!result) {
+        return res.status(404).json({
+          message: `product with id=${id} not found`,
+        });
+      }
+
+      await result.destroy();
+    
+      res.json(result);
     });
 
-    app.listen(3000, () => console.log("Server running on 3000 port"));
+    const port = process.env.PORT || 3000;
+    
+    app.listen(port, () => console.log("Server running on 3000 port"));
 }
 
-// Product.sync();
-
-export default startServer
+export default startServer;

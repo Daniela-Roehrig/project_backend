@@ -1,11 +1,12 @@
-import "dotenv/config"
-import {connectDatabase} from "./db/sequelize.js";
+import "dotenv/config";
+
+import { connectDatabase } from "./db/sequelize.js";
 import startServer from "./server.js";
 
-
-const boostrap = async()=>{
+const boostrap = async ()=> {
   await connectDatabase();
   startServer();
 }
 
 boostrap();
+

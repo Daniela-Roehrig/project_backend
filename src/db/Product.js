@@ -1,4 +1,4 @@
-import { DataTypes} from "sequelize";
+import { DataTypes } from "sequelize";
 
 import sequelize from "./sequelize.js";
 
@@ -9,15 +9,17 @@ const Product = sequelize.define(
             type: DataTypes.STRING,
             allowNull: false,
         },
-        description:{
-            type:DataTypes.TEXT,
+        description: {
+            type: DataTypes.TEXT,
             allowNull: false,
         },
-        price:{
+        price: {
             type: DataTypes.FLOAT,
-            allowNull: false, 
+            allowNull: false,
         }
     }
 );
+
+// Product.sync();
 
 export default Product;

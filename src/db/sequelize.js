@@ -1,4 +1,5 @@
 import { Sequelize } from "sequelize";
+
 const sequelize = new Sequelize({
     dialect: process.env.DATABASE_DIALECT,
     database: process.env.DATABASE_NAME,
@@ -10,6 +11,7 @@ const sequelize = new Sequelize({
         ssl: true,
     }
 });
+
 export const connectDatabase = async()=> {
     try {
         await sequelize.authenticate();
@@ -20,4 +22,5 @@ export const connectDatabase = async()=> {
         throw error;
     }
 }
+
 export default sequelize;
